@@ -10,12 +10,12 @@ setuptools.setup(
     description="",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/author/agci",
+    url="https://github.com/takenakayuuki0901/calculate_savings.git",
     project_urls={
-        "Bug Tracker": "https://github.com/author/agci",
+        "Bug Tracker": "https://github.com/takenakayuuki0901/calculate_savings.git",
     },
     classifiers=[
-        "Programming Language:: Python :: 3",
+        "Programming Language :: Python :: 3.11",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],

@@ -1,18 +1,25 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from datetime import datetime
 from sklearn.linear_model import LinearRegression
 
 
 def calculate_savings(living_expenses, discretionary_spending):
-    # サンプルデータの生成
-    df = pd.read_csv(
-        "/content/d2-1-5.csv", encoding="latin1", skiprows=10, parse_dates=True
-    )
-    data = df.iloc[3, 1:].tolist()
-    data = [x * 42230 for x in data]
-    date = pd.date_range(start="1/1/1991", end="31/12/2020", freq="Y")
-    df = pd.DataFrame(data, index=date, columns=["Real_Wage"])
+    df = pd.read_csv("hon-maikin-k-jissu.csv", encoding="Shift JIS")
+
+    filtered_df = df[df["産業分類"] == "TL  "]
+    filtered_df = filtered_df[filtered_df["就業形態"] != 2]
+    new_df = filtered_df[["年", "現金給与総額"]]
+
+    # 規模別に対してその年の平均をとる
+    df = new_df.groupby("年", as_index=False)["現金給与総額"].mean()
+
+    data = df["現金給与総額"].tolist()
+    start = datetime(df["年"][0], 1, 1).strftime("%Y-%m-%d")
+    end = datetime(df["年"].iloc[-1], 12, 31).strftime("%Y-%m-%d")
+    date = pd.date_range(start=start, end=end, freq="Y")
+    df = pd.DataFrame(data, index=date, columns=["Salary"])
 
     # 線形回帰モデルを使って将来の値を予測
     years_to_predict = 10
@@ -22,7 +29,7 @@ def calculate_savings(living_expenses, discretionary_spending):
         1:
     ]  # 最後の日から10年後までの日付
     X = df.index.year.values.reshape(-1, 1)  # インデックスから年を抽出
-    y = df["Real_Wage"]
+    y = df["Salary"]
 
     model = LinearRegression()
     model.fit(X, y)
@@ -31,19 +38,20 @@ def calculate_savings(living_expenses, discretionary_spending):
     future_y = model.predict(future_X)
 
     # 10年後までの貯金を計算
-    projected_income = future_y[-1]  # 10年後の予測された賃金
-    total_expenses = (
-        living_expenses * 10 + discretionary_spending * 10
-    )  # 10年間の総費用
-    savings = projected_income - total_expenses  # 貯金
+    savings = 0
+    for projected_income in future_y:
+        savings += projected_income - (living_expenses + discretionary_spending)
+        print(
+            f"{savings} = {projected_income} - {living_expenses} - {discretionary_spending}"
+        )
 
     # プロット
     plt.figure(figsize=(12, 8))
 
     # 実際の賃金データをプロット
-    plt.plot(df.index, df["Real_Wage"], label="Actual Data", color="blue")
+    plt.plot(df.index, df["Salary"], label="Actual Data", color="blue")
 
-    # 賃金の予測値をプロット
+    # 給料の予測値をプロット
     plt.plot(future_dates, future_y, "r--", label="Predicted Data")
 
     # 10年後までの貯金額を表示
@@ -57,9 +65,9 @@ def calculate_savings(living_expenses, discretionary_spending):
         fontsize=12,
     )
 
-    plt.title("Real Wage Prediction and Savings Calculation")
+    plt.title("Salary prediction and savings calculation")
     plt.xlabel("Year")
-    plt.ylabel("Real Wage")
+    plt.ylabel("Salary")
     plt.legend()
     plt.grid(True)
     plt.show()
@@ -67,11 +75,25 @@ def calculate_savings(living_expenses, discretionary_spending):
     return savings
 
 
-# 生活費と自由に使いたい金額を指定
-living_expenses = 360000  # 生活費
-discretionary_spending = 60000  # 自由に使いたい金額
+def main():
+    # Asking the user for living expenses and discretionary spending
+    try:
+        living_expenses = float(input("Enter your living expenses for 1 year: "))
+        discretionary_spending = float(
+            input("Enter your discretionary spending for 1 year: ")
+        )
+    except ValueError:
+        print("Invalid input. Please enter numeric values.")
+        return
 
-# 貯金を計算
-savings = calculate_savings(living_expenses, discretionary_spending)
+    # Calculating savings
+    savings = calculate_savings(living_expenses, discretionary_spending)
+    print("Savings till 10 years(yen): ", savings)
 
-print("10年後までの貯金: ", savings)
+    # Saving the graph
+    plt.savefig("result.png")
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()

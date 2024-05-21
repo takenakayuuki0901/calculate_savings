@@ -1,0 +1,12 @@
+Metadata-Version: 2.1
+Name: calculate-savings
+Version: 0.0.1
+Home-page: https://github.com/author/agci
+Author: YukiTakenaka
+Author-email: s2222024@stu.musashino-u.ac.jp
+Project-URL: Bug Tracker, https://github.com/author/agci
+Classifier: Programming Language:: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
